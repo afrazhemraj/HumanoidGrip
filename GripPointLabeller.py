@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPainter, QPen
@@ -38,7 +39,22 @@ class ImageViewer(QMainWindow):
         self.save_button.clicked.connect(self.save_points)
         self.save_button.setEnabled(False)
         self.layout.addWidget(self.save_button)
-
+        
+    def get_relative_path(self, file_path):
+        # Normalize the path for cross-platform compatibility
+        normalized_path = os.path.normpath(file_path)
+    
+        # Split the path into parts based on slashes
+        path_parts = normalized_path.split(os.sep)
+    
+        # Get the last three parts
+        relative_path_parts = path_parts[-3:]
+    
+        # Join the last three parts back into a relative path
+        relative_path = os.path.join(*relative_path_parts).replace("\\", "/")
+    
+        return relative_path
+    
     def open_image(self):
         # Open file dialog to select an image
         file_path, _ = QFileDialog.getOpenFileName(
@@ -54,7 +70,7 @@ class ImageViewer(QMainWindow):
                 raise ValueError("Unable to load image.")
 
             # Update attributes
-            self.image_path = file_path
+            self.image_path = self.get_relative_path(file_path)
             self.clicked_points = []  # Reset points
             self.save_button.setEnabled(False)
 
