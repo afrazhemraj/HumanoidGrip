@@ -94,11 +94,11 @@ class ImageViewer(QMainWindow):
                 # Draw a circle on the displayed image
                 self.draw_circle(x, y)
 
-                QMessageBox.information(
-                    self,
-                    "Point Recorded",
-                    f"Point {len(self.clicked_points)}: ({normalized_x:.2f}, {normalized_y:.2f})",
-                )
+                # QMessageBox.information(
+                #     self,
+                #     "Point Recorded",
+                #     f"Point {len(self.clicked_points)}: ({normalized_x:.2f}, {normalized_y:.2f})",
+                # )
 
             if len(self.clicked_points) == 5:
                 QMessageBox.information(
@@ -111,11 +111,11 @@ class ImageViewer(QMainWindow):
         pixmap_copy = self.displayed_pixmap.copy()  # Work on a copy to preserve the original
         painter = QPainter(pixmap_copy)
         pen = QPen(Qt.red)
-        pen.setWidth(5)
+        pen.setWidth(2)
         painter.setPen(pen)
 
         # Draw a circle at the given coordinates
-        radius = 10
+        radius = 4
         painter.drawEllipse(QPoint(x, y), radius, radius)
         painter.end()
 
