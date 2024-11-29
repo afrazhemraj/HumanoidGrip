@@ -4,6 +4,7 @@ import json
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtCore import Qt, QPoint
+import os
 
 
 class ImageViewer(QMainWindow):
@@ -139,30 +140,46 @@ class ImageViewer(QMainWindow):
         self.image_label.setPixmap(pixmap_copy)
         self.displayed_pixmap = pixmap_copy  # Update the displayed pixmap
 
+
     def save_points(self):
         if not self.clicked_points or not self.image_path:
             QMessageBox.warning(self, "Error", "No points to save!")
             return
 
-        # Prepare data to save
-        data = {
+        # Prepare data to append
+        new_data = {
             "image_path": self.image_path,
             "points": [{"x": x, "y": y} for x, y in self.clicked_points],
         }
 
-        # Save to JSON file
-        save_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Points", "", "JSON Files (*.json)"
-        )
-        if not save_path:
-            return  # Exit if no file is selected
+        # Define the JSON file name
+        json_file_path = os.path.join(os.getcwd(), "annotations.json")
 
         try:
-            with open(save_path, "w") as json_file:
+            # Check if the JSON file already exists
+            if os.path.exists(json_file_path):
+                # Load existing data
+                with open(json_file_path, "r") as json_file:
+                    data = json.load(json_file)
+                # Ensure it's a list
+                if not isinstance(data, list):
+                    QMessageBox.warning(self, "Error", "Existing file format is invalid!")
+                    return
+            else:
+                # If the file doesn't exist, start with an empty list
+                data = []
+
+            # Append new data to the list
+            data.append(new_data)
+
+            # Save updated data back to the file
+            with open(json_file_path, "w") as json_file:
                 json.dump(data, json_file, indent=4)
-            QMessageBox.information(self, "Success", f"Points saved to {save_path}")
+            QMessageBox.information(self, "Success", f"Points appended to {json_file_path}")
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Cannot save points: {e}")
+
 
 
 # Main function to run the app
