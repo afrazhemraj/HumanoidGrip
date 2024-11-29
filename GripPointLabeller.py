@@ -132,7 +132,7 @@ class ImageViewer(QMainWindow):
 
         # Draw a circle at the given coordinates
         radius = 10
-        painter.drawEllipse(QPoint(int(x), int(y)), radius, radius)
+        painter.drawEllipse(QPoint(x, y), radius, radius)
         painter.end()
 
         # Update the QLabel with the new pixmap
