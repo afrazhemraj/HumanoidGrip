@@ -1,13 +1,13 @@
 import sys
 import os
 import json
+# GUI Components
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget,
     QFileDialog, QMessageBox, QComboBox, QHBoxLayout
 )
 from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtCore import Qt, QPoint
-import os
 
 
 
@@ -28,20 +28,23 @@ class ImageViewer(QMainWindow):
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
 
-        # QLabel to display the image
+        # IMAGE
+        # QLabel to display the user uploaded image
         self.image_label = QLabel("No Image Loaded")
         self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setStyleSheet("background-color: black; color: white;")
         self.layout.addWidget(self.image_label)
 
-        # Dropdown menus for size and shape
+        # FEATURE VALUES (Size and Shape)
         dropdown_layout = QHBoxLayout()
+        # Dropdown menu for size 
         self.size_dropdown = QComboBox()
         self.size_dropdown.addItems(["small", "medium", "large"])
         self.size_dropdown.setToolTip("Select the size of the object")
         dropdown_layout.addWidget(QLabel("Size:"))
         dropdown_layout.addWidget(self.size_dropdown)
 
+        # Dropdown menu for shape 
         self.shape_dropdown = QComboBox()
         self.shape_dropdown.addItems(["circular", "rectangular", "other"])
         self.shape_dropdown.setToolTip("Select the shape of the object")
@@ -50,16 +53,17 @@ class ImageViewer(QMainWindow):
 
         self.layout.addLayout(dropdown_layout)
 
-        # Button to open an image
+        # Button to upload an image
         self.open_button = QPushButton("Open Image")
         self.open_button.clicked.connect(self.open_image)
         self.layout.addWidget(self.open_button)
-        # Button to save points
+        # Button to save the annotated points
         self.save_button = QPushButton("Save Points")
         self.save_button.clicked.connect(self.save_points)
         self.save_button.setEnabled(False)
         self.layout.addWidget(self.save_button)
-        
+
+    # Gets the relative image file path given a global file path      
     def get_relative_path(self, file_path):
         # Normalize the path for cross-platform compatibility
         normalized_path = os.path.normpath(file_path)
@@ -75,13 +79,14 @@ class ImageViewer(QMainWindow):
     
         return relative_path
     
+    # Callback function for the upload image GUI button
     def open_image(self):
         # Open file dialog to select an image
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
         )
         if not file_path:
-            return  # If no file is selected, do nothing
+            return
 
         try:
             # Load and display the image
@@ -103,6 +108,7 @@ class ImageViewer(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Cannot open image: {e}")
 
+    # Mouse click event to record points
     def record_click(self, event):
         if len(self.clicked_points) < 5:
             # Calculate the displayed image bounds within the QLabel
@@ -130,18 +136,13 @@ class ImageViewer(QMainWindow):
                 # Draw a circle on the displayed image
                 self.draw_circle(x, y)
 
-                # QMessageBox.information(
-                #     self,
-                #     "Point Recorded",
-                #     f"Point {len(self.clicked_points)}: ({normalized_x:.2f}, {normalized_y:.2f})",
-                # )
-
             if len(self.clicked_points) == 5:
                 QMessageBox.information(
                     self, "Points Recorded", "All 5 points have been recorded."
                 )
                 self.save_button.setEnabled(True)
-
+    
+    # Overlay a small red circle where the user has annotated a grip point
     def draw_circle(self, x, y):
         # Create a painter to draw on the image
         pixmap_copy = self.displayed_pixmap.copy()  # Work on a copy to preserve the original
@@ -159,7 +160,7 @@ class ImageViewer(QMainWindow):
         self.image_label.setPixmap(pixmap_copy)
         self.displayed_pixmap = pixmap_copy  # Update the displayed pixmap
 
-
+    # Append the 5 points and feature labels to annotations.json 
     def save_points(self):
         if not self.clicked_points or not self.image_path:
             QMessageBox.warning(self, "Error", "No points to save!")
