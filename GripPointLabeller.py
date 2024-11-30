@@ -1,10 +1,14 @@
 import sys
 import os
 import json
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import (
+    QApplication, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget,
+    QFileDialog, QMessageBox, QComboBox, QHBoxLayout
+)
 from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtCore import Qt, QPoint
 import os
+
 
 
 class ImageViewer(QMainWindow):
@@ -30,11 +34,26 @@ class ImageViewer(QMainWindow):
         self.image_label.setStyleSheet("background-color: black; color: white;")
         self.layout.addWidget(self.image_label)
 
+        # Dropdown menus for size and shape
+        dropdown_layout = QHBoxLayout()
+        self.size_dropdown = QComboBox()
+        self.size_dropdown.addItems(["small", "medium", "large"])
+        self.size_dropdown.setToolTip("Select the size of the object")
+        dropdown_layout.addWidget(QLabel("Size:"))
+        dropdown_layout.addWidget(self.size_dropdown)
+
+        self.shape_dropdown = QComboBox()
+        self.shape_dropdown.addItems(["circular", "rectangular", "other"])
+        self.shape_dropdown.setToolTip("Select the shape of the object")
+        dropdown_layout.addWidget(QLabel("Shape:"))
+        dropdown_layout.addWidget(self.shape_dropdown)
+
+        self.layout.addLayout(dropdown_layout)
+
         # Button to open an image
         self.open_button = QPushButton("Open Image")
         self.open_button.clicked.connect(self.open_image)
         self.layout.addWidget(self.open_button)
-
         # Button to save points
         self.save_button = QPushButton("Save Points")
         self.save_button.clicked.connect(self.save_points)
@@ -145,11 +164,17 @@ class ImageViewer(QMainWindow):
         if not self.clicked_points or not self.image_path:
             QMessageBox.warning(self, "Error", "No points to save!")
             return
+        
+        # Get the dropdown selections
+        size = self.size_dropdown.currentText()
+        shape = self.shape_dropdown.currentText()
 
         # Prepare data to append
         new_data = {
             "image_path": self.image_path,
             "points": [{"x": x, "y": y} for x, y in self.clicked_points],
+            "size": size,
+            "shape": shape,
         }
 
         # Define the JSON file name
